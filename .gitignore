@@ -1,0 +1,10 @@
+*
+!*.sh
+!*.c
+!*.cpp
+!*.h
+!*.hpp
+!.gitignore
+!Makefile
+!lab1
+!lab2
