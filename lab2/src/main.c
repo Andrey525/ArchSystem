@@ -177,7 +177,7 @@ void run_int() {
 int main(int argc, char *argv[]) {
     int count_of_tests;
     int data_type;
-    
+
     /*** Возимся с аргументами командной строки***/
     if (argc == 4) {
         if (strcmp(argv[1], "-counttests") == 0) {
@@ -251,6 +251,5 @@ int main(int argc, char *argv[]) {
         }
         break;
     }
-
     return 0;
 }
