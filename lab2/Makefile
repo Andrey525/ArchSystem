@@ -1,3 +1,5 @@
+all: prog-O0 prog-O1 prog-O2 prog-O3
+
 prog-O0: build/main-O0.o bin
 	gcc build/main-O0.o -o bin/prog-O0 -lm
 

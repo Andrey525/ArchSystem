@@ -5,7 +5,7 @@
 #include <sys/time.h>
 #include <time.h>
 
-#define N 10000
+#define N 1000
 
 double wtime() {
     struct timeval t;
@@ -57,7 +57,7 @@ void print_all(double *a, double *b, double *c) {
     printf("\n");
 }
 
-void run_double() {
+double run_double() {
     double *a, *b, *c;
     a = malloc(sizeof(*a) * N * N);
     if (!a) {
@@ -94,9 +94,11 @@ void run_double() {
     free(a);
     free(b);
     free(c);
+
+    return t;
 }
 
-void run_float() {
+double run_float() {
     float *a, *b, *c;
     a = malloc(sizeof(*a) * N * N);
     if (!a) {
@@ -133,9 +135,11 @@ void run_float() {
     free(a);
     free(b);
     free(c);
+
+    return t;
 }
 
-void run_int() {
+double run_int() {
     int *a, *b, *c;
     a = malloc(sizeof(*a) * N * N);
     if (!a) {
@@ -172,11 +176,38 @@ void run_int() {
     free(a);
     free(b);
     free(c);
+
+    return t;
 }
+
+char *getLine(char *filename, int needed) {
+    char *line = malloc(sizeof(char) * 250);
+    FILE *f = fopen(filename, "r");
+    int c = 0;
+    while (c < needed && !feof(f)) {
+        line = fgets(line, 50, f);
+        c++;
+    }
+    fclose(f);
+    if (c != needed) {
+        return NULL;
+    }
+    return strdup(line); // не забыть потом освободить буфер
+}
+
+typedef struct TestParameters {
+    int instruction_count;
+    double time;
+    int l_num;
+    double abs_error;
+    double rel_error;
+    double task_perf;
+} TestParameters;
 
 int main(int argc, char *argv[]) {
     int count_of_tests;
     int data_type;
+    const char task[] = "dgemv";
 
     /*** Возимся с аргументами командной строки***/
     if (argc == 4) {
@@ -228,28 +259,114 @@ int main(int argc, char *argv[]) {
     }
     /*** Конец***/
 
+    
+    printf("Task name = %s\n", task);
     printf("count_of_tests = %d\n", count_of_tests);
     printf("data_type = %d\n", data_type);
+
+    TestParameters *tp = malloc(sizeof(TestParameters) * count_of_tests);
+
+    char *opt = malloc(sizeof(char) * 5);
+    opt = strcpy(opt, "-O");
+    char *temp_opt = getLine("info.txt", 2);
+    strcat(opt, temp_opt);
+    opt[strlen(opt) - 1] = '\0';
+    printf("opt = %s\n", opt);
+
+    char *pmodel = malloc(sizeof(char) * 50);
+    pmodel = getLine("info.txt", 1);
+    printf("PModel = %s", pmodel);
+    pmodel[strlen(pmodel) - 1] = '\0';
+    
 
     switch (data_type) {
     case 0:
         for (int i = 0; i < count_of_tests; i++) {
-            printf("Test number %d\n", i + 1);
-            run_double();
+            tp[i].l_num = i + 1;
+            printf("lnum = %d\n", tp[i].l_num);
+            tp[i].time = run_double();
         }
         break;
     case 1:
         for (int i = 0; i < count_of_tests; i++) {
-            printf("Test number %d\n", i + 1);
-            run_float();
+            tp[i].l_num = i + 1;
+            printf("lnum = %d\n", tp[i].l_num);
+            tp[i].time = run_float();
         }
         break;
     case 2:
         for (int i = 0; i < count_of_tests; i++) {
-            printf("Test number %d\n", i + 1);
-            run_int();
+            tp[i].l_num = i + 1;
+            printf("lnum = %d\n", tp[i].l_num);
+            tp[i].time = run_int();
+            printf("time = %lf\n", tp[i].time);
         }
         break;
     }
+    double middle_time = 0;
+    double sum_time = 0;
+    for (int i = 0; i < count_of_tests; i++) {
+        sum_time = sum_time + tp[i].time;
+    }
+    middle_time = sum_time / count_of_tests;
+    printf("middle_time = %lf\n", middle_time);
+
+    for (int i = 0; i < count_of_tests; i++) {
+        tp[i].abs_error = fabs(tp[i].time - middle_time);
+        printf("abs_error = %lf\n", tp[i].abs_error);
+        tp[i].rel_error = (tp[i].abs_error / tp[i].time) * 100;
+        printf("rel_error = %lf%%\n", tp[i].rel_error);
+
+    }
+    
+    char *string[count_of_tests];
+    char *num_in_string = malloc(sizeof(char) * 20);
+
+    FILE *fp = fopen("result.csv", "a");
+    for (int i = 0; i < count_of_tests; i++) {
+        string[i] = malloc(sizeof(char) * 200);
+        strcpy(string[i], pmodel);
+        strcat(string[i], ";");
+        strcat(string[i], task);
+        strcat(string[i], ";");
+        switch (data_type) {
+        case 0:
+            strcat(string[i], "double;");
+            break;
+        case 1:
+            strcat(string[i], "float;");
+            break;
+        case 2:
+            strcat(string[i], "int;");
+            break;
+        }
+        strcat(string[i], opt);
+        strcat(string[i], ";");
+
+        strcat(string[i], "gettimeofday");
+        strcat(string[i], ";");
+
+        sprintf(num_in_string, "%lf", tp[i].time);
+        strcat(string[i], num_in_string);
+        strcat(string[i], ";");
+
+        sprintf(num_in_string, "%d", tp[i].l_num);
+        strcat(string[i], num_in_string);
+        strcat(string[i], ";");
+
+        sprintf(num_in_string, "%lf", middle_time);
+        strcat(string[i], num_in_string);
+        strcat(string[i], ";");
+
+        sprintf(num_in_string, "%lf", tp[i].abs_error);
+        strcat(string[i], num_in_string);
+        strcat(string[i], ";");
+        sprintf(num_in_string, "%lf", tp[i].rel_error);
+        strcat(string[i], num_in_string);
+        strcat(string[i], ";");
+        printf("%s\n", string[i]);
+        fprintf(fp, "%s\n", string[i]);
+    }
+    
     return 0;
 }
