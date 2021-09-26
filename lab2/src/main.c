@@ -259,7 +259,6 @@ int main(int argc, char *argv[]) {
     }
     /*** Конец***/
 
-    
     printf("Task name = %s\n", task);
     printf("count_of_tests = %d\n", count_of_tests);
     printf("data_type = %d\n", data_type);
@@ -277,7 +276,6 @@ int main(int argc, char *argv[]) {
     pmodel = getLine("info.txt", 1);
     printf("PModel = %s", pmodel);
     pmodel[strlen(pmodel) - 1] = '\0';
-    
 
     switch (data_type) {
     case 0:
@@ -316,9 +314,8 @@ int main(int argc, char *argv[]) {
         printf("abs_error = %lf\n", tp[i].abs_error);
         tp[i].rel_error = (tp[i].abs_error / tp[i].time) * 100;
         printf("rel_error = %lf%%\n", tp[i].rel_error);
-
     }
-    
+
     char *string[count_of_tests];
     char *num_in_string = malloc(sizeof(char) * 20);
 
@@ -365,8 +362,12 @@ int main(int argc, char *argv[]) {
         strcat(string[i], num_in_string);
         strcat(string[i], ";");
         printf("%s\n", string[i]);
-        fprintf(fp, "%s\n", string[i]);
+        if (i == count_of_tests - 1) {
+            fprintf(fp, "%s", string[i]);
+        } else {
+            fprintf(fp, "%s\n", string[i]);
+        }
     }
-    
+
     return 0;
 }
