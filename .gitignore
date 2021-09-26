@@ -8,3 +8,6 @@
 !Makefile
 !lab1
 !lab2
+!src
+!.clang-format
+!clang-format-all
