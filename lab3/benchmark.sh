@@ -4,7 +4,7 @@ printf "MemoryType;BlockSize;ElementType;BufferSize;LaunchNum;Timer;WriteTime(s)
 cmake -S . -B build/Release -DCMAKE_BUILD_TYPE=Release
 cmake --build build/Release
 counttests=10
-./bin/memtestexe -m RAM -b 64 B -l $counttests
+./bin/memtestexe -m RAM -b 4 MB -l $counttests
 counttests=10
 ./bin/memtestexe -m HDD -b 4 MB -l $counttests
 counttests=10

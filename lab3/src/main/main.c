@@ -21,11 +21,12 @@ typedef struct TestParameters {
     double rel_error_w;
     double abs_error_r;
     double rel_error_r;
+    long int write_bandwidth;
+    long int read_bandwidth;
 } TestParameters;
 
 void print_to_csv(int mem_type, TestParameters *param, double average_time_w,
-                  double average_time_r, int write_bandwidth,
-                  int read_bandwidth, int launch_count) {
+                  double average_time_r, int launch_count) {
     FILE *fp = fopen("result.csv", "a");
     for (int i = 0; i < launch_count; i++) {
         char *string = malloc(sizeof(char) * 200);
@@ -40,17 +41,17 @@ void print_to_csv(int mem_type, TestParameters *param, double average_time_w,
         if (mem_type != 1) {
             sprintf(temp_string, "%d", param[i].block_size / 1024 / 1024);
             strcat(string, temp_string);
-            strcat(string, "MB;int;");
+            strcat(string, ";int;");
             sprintf(temp_string, "%d", param[i].buffer_size / 1024 / 1024);
             strcat(string, temp_string);
-            strcat(string, "MB;");
+            strcat(string, ";");
         } else {
             sprintf(temp_string, "%d", param[i].block_size);
             strcat(string, temp_string);
-            strcat(string, "B;int;");
+            strcat(string, ";int;");
             sprintf(temp_string, "%d", param[i].buffer_size);
             strcat(string, temp_string);
-            strcat(string, "B;");
+            strcat(string, ";");
         }
         sprintf(temp_string, "%d", i + 1);
         strcat(string, temp_string);
@@ -67,12 +68,16 @@ void print_to_csv(int mem_type, TestParameters *param, double average_time_w,
         sprintf(temp_string, "%lf", average_time_r);
         strcat(string, temp_string);
         strcat(string, ";");
-        sprintf(temp_string, "%d", write_bandwidth / 1024 / 1024);
+        sprintf(temp_string, "%ld", param[i].write_bandwidth / 1024 / 1024);
         strcat(string, temp_string);
         strcat(string, ";");
-        sprintf(temp_string, "%d", read_bandwidth / 1024 / 1024);
-        strcat(string, temp_string);
-        strcat(string, ";");
+        if (mem_type != 1) {
+            sprintf(temp_string, "%ld", param[i].read_bandwidth / 1024 / 1024);
+            strcat(string, temp_string);
+            strcat(string, ";");
+        } else {
+            strcat(string, "-;");
+        }
         sprintf(temp_string, "%lf", param[i].abs_error_w);
         strcat(string, temp_string);
         strcat(string, ";");
@@ -166,7 +171,6 @@ int main(int argc, char *argv[]) {
     TestParameters param[launch_count];
     double sum_time_w = 0;
     double sum_time_r = 0;
-    int sum_blocks = 0;
     double average_time_w;
     double average_time_r;
     int write_bandwidth;
@@ -193,23 +197,20 @@ int main(int argc, char *argv[]) {
             param[i].buffer_size = 4;
             sum_time_w = sum_time_w + param[i].tw;
             sum_time_r = sum_time_r + param[i].tr;
-            sum_blocks = sum_blocks + param[i].block_size;
         }
         average_time_w = sum_time_w / launch_count;
         average_time_r = sum_time_r / launch_count;
-        write_bandwidth = sum_blocks / launch_count / average_time_w;
-        // read_bandwidth = sum_blocks / launch_count / average_time_r;
-        read_bandwidth = 0;
-        printf("rb = %d sumbl = %d avertime = %lf\n", read_bandwidth,
-               sum_blocks, average_time_r);
+
         for (int i = 0; i < launch_count; i++) {
             param[i].abs_error_w = fabs(param[i].tw - average_time_w);
             param[i].abs_error_r = fabs(param[i].tr - average_time_r);
             param[i].rel_error_w = param[i].abs_error_w / param[i].tw;
             param[i].rel_error_r = param[i].abs_error_r / param[i].tr;
+            param[i].write_bandwidth = param[i].block_size / param[i].tw;
+            param[i].read_bandwidth = param[i].block_size / param[i].tr;
         }
         print_to_csv(mem_type, param, average_time_w, average_time_r,
-                     write_bandwidth, read_bandwidth, launch_count);
+                     launch_count);
         break;
     case 2:
         for (int i = 0; i < launch_count; i++, block_size += 4 * 1024 * 1024) {
@@ -223,21 +224,20 @@ int main(int argc, char *argv[]) {
             param[i].buffer_size = block_size;
             sum_time_w = sum_time_w + param[i].tw;
             sum_time_r = sum_time_r + param[i].tr;
-            sum_blocks = sum_blocks + block_size;
         }
 
         average_time_w = sum_time_w / launch_count;
         average_time_r = sum_time_r / launch_count;
-        write_bandwidth = sum_blocks / launch_count / average_time_w;
-        read_bandwidth = sum_blocks / launch_count / average_time_r;
         for (int i = 0; i < launch_count; i++) {
             param[i].abs_error_w = fabs(param[i].tw - average_time_w);
             param[i].abs_error_r = fabs(param[i].tr - average_time_r);
             param[i].rel_error_w = param[i].abs_error_w / param[i].tw;
             param[i].rel_error_r = param[i].abs_error_r / param[i].tr;
+            param[i].write_bandwidth = param[i].block_size / param[i].tw;
+            param[i].read_bandwidth = param[i].block_size / param[i].tr;
         }
         print_to_csv(mem_type, param, average_time_w, average_time_r,
-                     write_bandwidth, read_bandwidth, launch_count);
+                     launch_count);
         break;
     case 3:
         for (int i = 0; i < launch_count; i++, block_size += 4 * 1024 * 1024) {
@@ -251,20 +251,19 @@ int main(int argc, char *argv[]) {
             param[i].buffer_size = block_size;
             sum_time_w = sum_time_w + param[i].tw;
             sum_time_r = sum_time_r + param[i].tr;
-            sum_blocks = sum_blocks + block_size;
         }
         average_time_w = sum_time_w / launch_count;
         average_time_r = sum_time_r / launch_count;
-        write_bandwidth = sum_blocks / launch_count / average_time_w;
-        read_bandwidth = sum_blocks / launch_count / average_time_r;
         for (int i = 0; i < launch_count; i++) {
             param[i].abs_error_w = fabs(param[i].tw - average_time_w);
             param[i].abs_error_r = fabs(param[i].tr - average_time_r);
             param[i].rel_error_w = param[i].abs_error_w / param[i].tw;
             param[i].rel_error_r = param[i].abs_error_r / param[i].tr;
+            param[i].write_bandwidth = param[i].block_size / param[i].tw;
+            param[i].read_bandwidth = param[i].block_size / param[i].tr;
         }
         print_to_csv(mem_type, param, average_time_w, average_time_r,
-                     write_bandwidth, read_bandwidth, launch_count);
+                     launch_count);
         break;
     }
     return 0;
