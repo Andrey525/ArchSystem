@@ -9,8 +9,10 @@
 !lab1
 !lab2
 !lab3
+!lab4
 !main
 !memtest
+!dgemm
 !CMakeLists.txt
 !src
 !.clang-format
