@@ -2,10 +2,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/time.h>
 
 void help() {
     printf("Incorrect input of arguments!\n"
            "Use, for example: ./dgemm --size 2048\n");
+}
+
+double wtime() {
+    struct timeval t;
+    gettimeofday(&t, NULL);
+    return (double)t.tv_sec + (double)t.tv_usec * 1E-6;
 }
 
 int getSize(int argc, char *argv[]) {
@@ -98,16 +105,40 @@ int main(int argc, char *argv[]) {
         printf("Ошибка выделения памяти\n");
         exit(-1);
     }
+
+    double t1, t2, t3;
+    t1 = wtime();
     dgemm_def(matrixA, matrixB, matrixC, n);
+    t1 = wtime() - t1;
+    printf("Time dgemm_def = %lf\n", t1);
     // matrix_print(matrixC, n);
     zero_init(matrixC, n);
+    t2 = wtime();
     dgemm_transpose(matrixA, matrixB, matrixC, n);
+    t2 = wtime() - t2;
+    printf("Time dgemm_transpose = %lf\n", t2);
     // matrix_print(matrixC, n);
     zero_init(matrixC, n);
+    t3 = wtime();
     dgemm_block(matrixA, matrixB, matrixC, n, BS);
+    t3 = wtime() - t3;
+    printf("Time dgemm_block = %lf\n", t3);
     // matrix_print(matrixC, n);
+
     free(matrixA);
     free(matrixB);
     free(matrixC);
+
+    FILE *File;
+
+    File = fopen("./results/def.dat", "a");
+    fprintf(File, "%d\t%lf\n", n, t1);
+    fclose(File);
+    File = fopen("./results/transpose.dat", "a");
+    fprintf(File, "%d\t%lf\n", n, t2);
+    fclose(File);
+    File = fopen("./results/block.dat", "a");
+    fprintf(File, "%d\t%lf\t%d\n", n, t3, BS);
+    fclose(File);
     return 0;
 }
