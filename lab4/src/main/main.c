@@ -40,6 +40,33 @@ int main(int argc, char *argv[]) {
     if (!n) {
         return -1;
     }
-    printf("%d\n", n);
+    printf("size = %d\n", n);
+
+    double *matrixA = malloc(sizeof(double) * n * n);
+    if (!matrixA) {
+        printf("Ошибка выделения памяти\n");
+        exit(-1);
+    }
+    random_init(matrixA, n);
+    matrix_print(matrixA, n);
+
+    double *matrixB = malloc(sizeof(double) * n * n);
+    if (!matrixB) {
+        printf("Ошибка выделения памяти\n");
+        exit(-1);
+    }
+    random_init(matrixB, n);
+    matrix_print(matrixB, n);
+
+    double *matrixC = malloc(sizeof(double) * n * n);
+    if (!matrixC) {
+        printf("Ошибка выделения памяти\n");
+        exit(-1);
+    }
+    dgemm_def(matrixA, matrixB, matrixC, n);
+    matrix_print(matrixC, n);
+    zero_init(matrixC, n);
+    dgemm_transpose(matrixA, matrixB, matrixC, n);
+    matrix_print(matrixC, n);
     return 0;
 }
