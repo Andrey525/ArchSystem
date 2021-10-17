@@ -14,8 +14,7 @@ void random_init(double matrix[], const int n) {
     srand(time(NULL));
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
-            // matrix[i][j] = (double)(rand()) / RAND_MAX * 1000 + 1;
-            *(matrix + i * n + j) = (i * n) + (j + 1);
+            *(matrix + i * n + j) = (double)(rand()) / RAND_MAX * 1000 + 1;
         }
     }
 }
@@ -57,6 +56,28 @@ void dgemm_transpose(double matrixA[], double matrixB[], double matrixC[],
             for (int j = 0; j < n; j++) {
                 *(matrixC + i * n + j) +=
                     *(matrixA + i * n + k) * *(matrixB + k * n + j);
+            }
+        }
+    }
+}
+
+void dgemm_block(double matrixA[], double matrixB[], double matrixC[],
+                 const int n, const int BS) {
+    int i, j, k, i0, j0, k0;
+    double *a0, *b0, *c0;
+    for (i = 0; i < n; i += BS) {
+        for (j = 0; j < n; j += BS) {
+            for (k = 0; k < n; k += BS) {
+                for (i0 = 0, c0 = (matrixC + i * n + j),
+                    a0 = (matrixA + i * n + k);
+                     i0 < BS; ++i0, c0 += n, a0 += n) {
+                    for (k0 = 0, b0 = (matrixB + k * n + j); k0 < BS;
+                         ++k0, b0 += n) {
+                        for (j0 = 0; j0 < BS; ++j0) {
+                            c0[j0] += a0[k0] * b0[j0];
+                        }
+                    }
+                }
             }
         }
     }
