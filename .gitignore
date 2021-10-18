@@ -4,6 +4,7 @@
 !*.cpp
 !*.h
 !*.hpp
+!*.py
 !.gitignore
 !Makefile
 !lab1
