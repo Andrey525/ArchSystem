@@ -11,10 +11,15 @@
 !lab2
 !lab3
 !lab4
+!lab5
 !main
 !memtest
 !dgemm
+!lib
+!bin
+!build
 !CMakeLists.txt
 !src
 !.clang-format
 !clang-format-all
+!.gitkeep
