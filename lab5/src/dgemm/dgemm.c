@@ -4,7 +4,6 @@
 #include <time.h>
 
 void random_init(double matrix[], const int n) {
-    // srand(time(NULL));
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
             *(matrix + i * n + j) = (double)(rand()) / RAND_MAX * 10 + 1;

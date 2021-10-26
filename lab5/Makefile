@@ -1,4 +1,4 @@
-all: dgemmexe dgemmMPIexe dgemmOMPexe
+all: dgemmexe dgemmMPIexe dgemmOMPexe dgemmPTexe
 
 # Начало сборки последовательной программы
 dgemmexe: build/main.o lib/libdgemm.a 
@@ -13,6 +13,20 @@ build/dgemm.o: src/dgemm/dgemm.c src/dgemm/dgemm.h
 build/main.o: src/main/main.c src/dgemm/dgemm.h
 	gcc -Wall -Werror -c src/main/main.c -o build/main.o
 # Конец сборки последовательной программы
+
+# Начало сборки Posix-threads программы
+dgemmPTexe: build/mainPT.o lib/libdgemmPT.a
+	gcc build/mainPT.o -L./lib -ldgemmPT -o bin/dgemmPTexe -lpthread
+
+lib/libdgemmPT.a: build/dgemmPT.o 
+	ar rc lib/libdgemmPT.a build/dgemmPT.o
+
+build/dgemmPT.o: src/dgemm/dgemmPT.c src/dgemm/dgemmPT.h
+	gcc -Wall -c src/dgemm/dgemmPT.c -o build/dgemmPT.o
+
+build/mainPT.o: src/main/mainPT.c src/dgemm/dgemmPT.h
+	gcc -Wall -c src/main/mainPT.c -o build/mainPT.o
+# Конец сборки Posix-threads программы
 
 # Начало сборки параллельной OMP программы
 dgemmOMPexe: build/mainOMP.o lib/libdgemmOMP.a
