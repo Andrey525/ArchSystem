@@ -11,13 +11,6 @@ void random_init(double matrix[], const int n) {
         }
     }
 }
-void zero_init(double matrix[], const int n) {
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
-            *(matrix + i * n + j) = 0;
-        }
-    }
-}
 
 void matrix_print(double matrix[], const int n) {
     printf("\nMatrix:\n");
