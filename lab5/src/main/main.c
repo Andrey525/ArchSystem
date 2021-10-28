@@ -48,22 +48,21 @@ int main(int argc, char *argv[]) {
     if (n == -1) {
         return -1;
     }
-    printf("size = %d\n", n);
 
     t_init = wtime();
-    double *matrixA = malloc(sizeof(double) * n * n);
+    double *matrixA = calloc(n * n, sizeof(double));
     if (!matrixA) {
         printf("Ошибка выделения памяти\n");
         exit(-1);
     }
     random_init(matrixA, n);
-    double *matrixB = malloc(sizeof(double) * n * n);
+    double *matrixB = calloc(n * n, sizeof(double));
     if (!matrixB) {
         printf("Ошибка выделения памяти\n");
         exit(-1);
     }
     random_init(matrixB, n);
-    double *matrixC = malloc(sizeof(double) * n * n);
+    double *matrixC = calloc(n * n, sizeof(double));
     if (!matrixC) {
         printf("Ошибка выделения памяти\n");
         exit(-1);
@@ -73,15 +72,21 @@ int main(int argc, char *argv[]) {
     t_dgemm = wtime();
     dgemm_def(matrixA, matrixB, matrixC, n);
     t_dgemm = wtime() - t_dgemm;
-    printf("t_init = %.6lf \t t_dgemm = %.6lf\n", t_init, t_dgemm);
 
     free(matrixA);
     free(matrixB);
     free(matrixC);
 
     FILE *File;
-    File = fopen("./results/sinle.dat", "a");
-    fprintf(File, "%d\t%lf\t%lf\n", n, t_init, t_dgemm);
+    File = fopen("./results/single.dat", "a");
+    fseek(File, 0, SEEK_END);
+    long pos = ftell(File);
+    if (pos == 0) {
+        fprintf(File, "%s%s\t%s\t%s\n", "#", "size", "t_init", "t_dgemm");
+        fprintf(File, "%d\t%lf\t%lf\n", n, t_init, t_dgemm);
+    } else {
+        fprintf(File, "%d\t%lf\t%lf\n", n, t_init, t_dgemm);
+    }
     fclose(File);
     return 0;
 }

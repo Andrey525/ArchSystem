@@ -7,9 +7,9 @@
 
 void help() {
     printf("Incorrect input of arguments!\n"
-           "Use, for example: ./dgemmexe --size 2048 --count-threads 4\n"
+           "Use, for example: ./dgemmPTexe --size 2048 --count-threads 4\n"
            "or\n"
-           "./dgemmexe --size 2048\n");
+           "./dgemmPTexe --size 2048\n");
 }
 
 double wtime() {
@@ -91,7 +91,7 @@ int main(int argc, char *argv[]) {
 
     local_size = size / thread_count;
 
-    thread_handles = malloc(thread_count * sizeof(pthread_t));
+    thread_handles = calloc(thread_count, sizeof(pthread_t));
 
     t_init = wtime();
     random_init();
@@ -104,13 +104,22 @@ int main(int argc, char *argv[]) {
     for (thread = 0; thread < thread_count; thread++)
         pthread_join(thread_handles[thread], NULL);
     t_dgemm = wtime() - t_dgemm;
-    printf("t_init = %.6lf \t t_dgemm = %.6lf\n", t_init, t_dgemm);
 
     free(thread_handles);
 
     FILE *File;
     File = fopen("./results/PT.dat", "a");
-    fprintf(File, "%d\t%d\t%lf\t%lf\n", size, thread_count, t_init, t_dgemm);
+    fseek(File, 0, SEEK_END);
+    long pos = ftell(File);
+    if (pos == 0) {
+        fprintf(File, "%s%s\t%s\t%s\t%s\n", "#", "size", "CT", "t_init",
+                "t_dgemm");
+        fprintf(File, "%d\t%d\t%lf\t%lf\n", size, thread_count, t_init,
+                t_dgemm);
+    } else {
+        fprintf(File, "%d\t%d\t%lf\t%lf\n", size, thread_count, t_init,
+                t_dgemm);
+    }
     fclose(File);
 
     return 0;

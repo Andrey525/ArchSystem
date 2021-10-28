@@ -6,9 +6,9 @@
 
 void help() {
     printf("Incorrect input of arguments!\n"
-           "Use, for example: ./dgemmexe --size 2048 --count-threads 4\n"
+           "Use, for example: ./dgemmOMPexe --size 2048 --count-threads 4\n"
            "or\n"
-           "./dgemmexe --size 2048\n");
+           "./dgemmOMPexe --size 2048\n");
 }
 
 double wtime() {
@@ -84,23 +84,22 @@ int main(int argc, char *argv[]) {
     if (CT == -1) {
         return -1;
     }
-    printf("size = %d\n", n);
-    printf("count-threads = %d\n", CT);
+
     t_init = wtime();
-    double *matrixA = malloc(sizeof(double) * n * n);
+    double *matrixA = calloc(n * n, sizeof(double));
     if (!matrixA) {
         printf("Ошибка выделения памяти\n");
         exit(-1);
     }
     random_init(matrixA, n, CT);
-    double *matrixB = malloc(sizeof(double) * n * n);
+    double *matrixB = calloc(n * n, sizeof(double));
     if (!matrixB) {
         printf("Ошибка выделения памяти\n");
         exit(-1);
     }
     random_init(matrixB, n, CT);
 
-    double *matrixC = malloc(sizeof(double) * n * n);
+    double *matrixC = calloc(n * n, sizeof(double));
     if (!matrixC) {
         printf("Ошибка выделения памяти\n");
         exit(-1);
@@ -109,14 +108,22 @@ int main(int argc, char *argv[]) {
     t_dgemm = wtime();
     dgemm(matrixA, matrixB, matrixC, n, CT);
     t_dgemm = wtime() - t_dgemm;
-    printf("t_init = %.6lf \t t_dgemm = %.6lf\n", t_init, t_dgemm);
+
     free(matrixA);
     free(matrixB);
     free(matrixC);
 
     FILE *File;
     File = fopen("./results/OMP.dat", "a");
-    fprintf(File, "%d\t%d\t%lf\t%lf\n", n, CT, t_init, t_dgemm);
+    fseek(File, 0, SEEK_END);
+    long pos = ftell(File);
+    if (pos == 0) {
+        fprintf(File, "%s%s\t%s\t%s\t%s\n", "#", "size", "CT", "t_init",
+                "t_dgemm");
+        fprintf(File, "%d\t%d\t%lf\t%lf\n", n, CT, t_init, t_dgemm);
+    } else {
+        fprintf(File, "%d\t%d\t%lf\t%lf\n", n, CT, t_init, t_dgemm);
+    }
     fclose(File);
 
     return 0;
