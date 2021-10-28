@@ -18,6 +18,7 @@
 !lib
 !bin
 !build
+!results
 !CMakeLists.txt
 !src
 !.clang-format

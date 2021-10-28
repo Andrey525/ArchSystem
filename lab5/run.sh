@@ -1,6 +1,6 @@
 #!/bin/bash
 
-rm ./results/*
+rm -rf ./results/*[!.gitkeep]
 make clean
 make all
 
